@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAPHOM | Member Archive</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .reveal { opacity: 0; transform: translateY(20px); transition: 0.8s; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .modal { display: none; position: fixed; inset: 0; }
+        .modal.active {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+
+<body class="bg-white text-black">
+
+<!-- NAV -->
+<nav class="fixed w-full z-50 px-6 py-6 flex justify-between bg-white/90 backdrop-blur">
+    <div class="flex gap-6 text-xs font-bold">
+        <a href="#shop">SHOP</a>
+        <a href="https://instagram.com/jona___tas" target="_blank">@jona___tas</a>
+    </div>
+
+    <div class="font-black text-xl cursor-pointer" onclick="scrollTo(0,0)">
+        BAPHOM
+    </div>
+
+    <div class="flex gap-6 text-xs font-bold">
+        <button id="userBtn">Account</button>
+        <button>Cart (0)</button>
+    </div>
+</nav>
+
+<!-- MODAL -->
+<div id="authModal" class="modal z-50">
+    <div class="bg-white p-10 w-full max-w-sm relative">
+        <button onclick="toggleAuth()" class="absolute right-4 top-4">X</button>
+
+        <!-- LOGIN -->
+        <div id="loginForm">
+            <h2 class="text-2xl mb-6">Login</h2>
+            <input id="loginEmail" placeholder="Email" class="border w-full mb-2">
+            <input id="loginPass" type="password" placeholder="Senha" class="border w-full mb-4">
+            <button onclick="handleLogin()" class="bg-black text-white w-full p-2">Entrar</button>
+            <p class="text-sm mt-3">Não tem conta? <button onclick="switchAuth()">Criar</button></p>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="registerForm" style="display:none;">
+            <h2 class="text-2xl mb-6">Criar Conta</h2>
+            <input id="regEmail" placeholder="Email" class="border w-full mb-2">
+            <input id="regPass" type="password" placeholder="Senha" class="border w-full mb-4">
+            <button onclick="handleRegister()" class="bg-black text-white w-full p-2">Criar</button>
+            <p class="text-sm mt-3">Já tem conta? <button onclick="switchAuth()">Login</button></p>
+        </div>
+    </div>
+</div>
+
+<!-- HERO -->
+<section class="h-screen flex items-center justify-center bg-black text-white">
+    <h1 class="text-6xl font-black">BAPHOM</h1>
+</section>
+
+<!-- SHOP -->
+<main id="shop" class="p-20 grid md:grid-cols-3 gap-10">
+    <div class="reveal">
+        <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea" class="mb-4">
+        <p>Cyber Puffer - €1450</p>
+    </div>
+</main>
+
+<!-- SCRIPT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCfQR5oGS4oBAo8n2KHynFOxgUlnZvmwHM",
+  authDomain: "baphom-d0d13.firebaseapp.com",
+  projectId: "baphom-d0d13",
+  storageBucket: "baphom-d0d13.firebasestorage.app",
+  messagingSenderId: "404007926967",
+  appId: "1:404007926967:web:64bf534913a0af153ba132",
+  measurementId: "G-3B06HYF62Z"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// UI
+window.toggleAuth = () => {
+    document.getElementById('authModal').classList.toggle('active');
+};
+
+window.switchAuth = () => {
+    const login = document.getElementById('loginForm');
+    const reg = document.getElementById('registerForm');
+
+    login.style.display = login.style.display === "none" ? "block" : "none";
+    reg.style.display = reg.style.display === "none" ? "block" : "none";
+};
+
+// REGISTER
+window.handleRegister = async () => {
+    try {
+        await createUserWithEmailAndPassword(auth, regEmail.value, regPass.value);
+        toggleAuth();
+    } catch (e) {
+        alert(e.message);
+    }
+};
+
+// LOGIN
+window.handleLogin = async () => {
+    try {
+        await signInWithEmailAndPassword(auth, loginEmail.value, loginPass.value);
+        toggleAuth();
+    } catch (e) {
+        alert(e.message);
+    }
+};
+
+// USER
+onAuthStateChanged(auth, (user) => {
+    const btn = document.getElementById('userBtn');
+
+    if (user) {
+        btn.innerText = user.email;
+        btn.onclick = () => signOut(auth);
+    } else {
+        btn.innerText = "Account";
+        btn.onclick = toggleAuth;
+    }
+});
+
+// reveal
+const obs = new IntersectionObserver(e => {
+    e.forEach(x => x.isIntersecting && x.target.classList.add('active'));
+});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
